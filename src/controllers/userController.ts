@@ -1,49 +1,58 @@
 import { Request, Response } from 'express';
-import { UserService } from '../services/userService';
+import { registerUser, fetchUserById, modifyUser, removeUser } from '../services/userService';
+import { IUser } from '../models/userModel'; // Import IUser interface
 
-export class UserController {
-    private userService: UserService;
+// Create a new user
+export const createUserController = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const userData: Partial<IUser> = req.body; // Ensure user data is of type IUser
+    const newUser = await registerUser(userData);
+    return res.status(201).json(newUser);
+  } catch (error) {
+    return res.status(500).json({ message: (error as Error).message });
+  }
+};
 
-    constructor() {
-        this.userService = new UserService();
+// Get user by ID
+export const getUserByIdController = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const userId = req.params.id;
+    console.log("userId ",userId)
+    const user = await fetchUserById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+    return res.status(200).json(user);
+  } catch (error) {
+    return res.status(500).json({ message: (error as Error).message });
+  }
+};
 
-    public getAllUsers = (_req:Request,res: Response): void => {
-        const users = this.userService.getAllUsers();
-        res.json(users);
-    };
+// Update user by ID
+export const updateUserController = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const userId = req.params.id;
+    const userData: Partial<IUser> = req.body;
+    const updatedUser = await modifyUser(userId, userData);
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    return res.status(200).json(updatedUser);
+  } catch (error) {
+    return res.status(500).json({ message: (error as Error).message });
+  }
+};
 
-    public getUserById = (req: Request, res: Response): void => {
-        const userId = parseInt(req.params.id, 10);
-        const user = this.userService.getUserById(userId);
-        if (user) {
-            res.json(user);
-        } else {
-            res.status(404).send('User not found');
-        }
-    };
-    public createUser = async (req: Request, res: Response): Promise<void> => {
-        try {
-            const user = req.body;
-
-            // Ensure that user data conforms to expected format
-            if (!user.id || !user.name || !user.email) {
-                res.status(400).json({ message: 'Invalid user data' });
-                return;
-            }
-
-            // Create a user using the service
-            const createdUser = await this.userService.createUser(user);
-            res.status(201).json(createdUser);
-        } catch (error) {
-            // TypeScript specific error handling
-            if (error instanceof Error) {
-                // Ensure the error has a message property
-                res.status(400).json({ message: 'Error creating user', error: error.message });
-            } else {
-                // Handle unexpected errors
-                res.status(500).json({ message: 'Internal server error' });
-            }
-        }
-    };
-}
+// Delete user by ID
+export const deleteUserController = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const userId = req.params.id;
+    const deletedUser = await removeUser(userId);
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    return res.status(200).json({ message: 'User deleted' });
+  } catch (error) {
+    return res.status(500).json({ message: (error as Error).message });
+  }
+};

@@ -1,22 +1,39 @@
-import { User } from '../models/userModel';
+import User from '../models/userModel';
+import { IUser } from '../models/userModel';
 
-export class UserRepository {
-    private users: User[] = [
-        { id: 1, name: 'John Doe', email: 'john@example.com' },
-        { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
-    ];
 
-    public findAll(): User[] {
-        return this.users;
-    }
+export const createUser = async (userData: Partial<IUser>) => {
+  try {
+    const user = new User(userData);
+    return await user.save();
+  } catch (error) {
+    console.log("Exception")
+    console.log(error)
+    throw new Error('Error creating user');
+  }
+};
 
-    public findById(id: number): User | undefined {
-        return this.users.find(user => user.id === id);
-    }
+export const getUserById = async (id: string) => {
+  try {
+    return await User.findById(id);
+  } catch (error) {
+    console.log("Exception ",error)
+    throw new Error('Error fetching user ');
+  }
+};
 
-    async save(user: User): Promise<User> {
-        // Simulate saving by adding to the array
-        this.users.push(user);
-        return user;
-    }
-}
+export const updateUser = async (id: string, userData: Partial<IUser>) => {
+  try {
+    return await User.findByIdAndUpdate(id, userData, { new: true });
+  } catch (error) {
+    throw new Error('Error updating user');
+  }
+};
+
+export const deleteUser = async (id: string) => {
+  try {
+    return await User.findByIdAndDelete(id);
+  } catch (error) {
+    throw new Error('Error deleting user');
+  }
+};

@@ -1,36 +1,22 @@
-import { validate } from 'class-validator';
-import { User } from '../models/userModel';
-import { UserRepository } from '../repositories/userRepository';
+import { createUser, getUserById, updateUser, deleteUser } from '../repositories/userRepository';
+import { IUser } from '../models/userModel';
 
-export class UserService {
-    private userRepository: UserRepository;
+// Register a new user
+export const registerUser = async (userData: Partial<IUser>): Promise<IUser> => {
+  return await createUser(userData);
+};
 
-    constructor() {
-        this.userRepository = new UserRepository();
-    }
+// Fetch a user by ID
+export const fetchUserById = async (id: string): Promise<IUser | null> => {
+  return await getUserById(id);
+};
 
-    public getAllUsers(): User[] {
-        return this.userRepository.findAll();
-    }
+// Update a user
+export const modifyUser = async (id: string, userData: Partial<IUser>): Promise<IUser | null> => {
+  return await updateUser(id, userData);
+};
 
-    public getUserById(id: number): User | undefined {
-        return this.userRepository.findById(id);
-    }
-
-    public async createUser(userData: User): Promise<User>{
-
-        console.log(userData)
-
-        const user = new User(userData.id,userData.name,userData.email);
-
-        console.log(user)
-        const errors =await validate(user);
-        if (errors.length > 0) {
-            // Optionally format the errors
-            throw new Error(`Validation failed: ${errors.map(err => Object.values(err.constraints ?? {})).join(', ')}`);
-        }
-        return this.userRepository.save(user);
-    }
-
-
-}
+// Delete a user
+export const removeUser = async (id: string): Promise<IUser | null> => {
+  return await deleteUser(id);
+};
